@@ -1,10 +1,18 @@
+/**
+ * Author: Kalle Lahtinen
+ *
+ * A sliding puzzle game. Game details and instructions are in Instructions.txt file
+*/
+
 #ifndef MAINWINDOW_HPP
 #define MAINWINDOW_HPP
 
+#include <clickablepixmapitem.hpp>
 #include <QMainWindow>
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QImage>
+#include "clickableview.hpp"
 
 const int WINDOW_MARGIN = 5;          // Space around puzzle
 const int IMAGE_MARGIN = 3;           // Space between puzzle parts
@@ -23,13 +31,17 @@ public:
     ~MainWindow();
 
 private slots:
+    void handleViewClick(const QPoint &clickPos);
 
 private:
-    QGraphicsView* puzzleView_; // puzzleView_ and
+    ClickableView* puzzleView_; // puzzleView_ and
     QGraphicsScene* scene_;     // scene_ are used for displaying the puzzle
 
     // The location of the one empty puzzle tile
     QPoint empty_tile_location_;
+
+    int sectionWidth_;
+    int sectionHeight_;
 
     /**
      * @brief divideImage creates subimage items from user image
