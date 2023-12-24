@@ -7,7 +7,6 @@
 #ifndef MAINWINDOW_HPP
 #define MAINWINDOW_HPP
 
-#include <clickablepixmapitem.hpp>
 #include <QMainWindow>
 #include <QGraphicsView>
 #include <QGraphicsScene>
@@ -31,6 +30,11 @@ public:
     ~MainWindow();
 
 private slots:
+    /**
+     * @brief handleViewClick receives ClickableView::mouseClickDetected signal.
+     *        Switches clicked QGraphicsPixmapItem with empty slot if one was clicked
+     * @param clickPos is the clicked position of the view
+     */
     void handleViewClick(const QPoint &clickPos);
 
 private:
@@ -40,8 +44,8 @@ private:
     // The location of the one empty puzzle tile
     QPoint empty_tile_location_;
 
-    int sectionWidth_;
-    int sectionHeight_;
+    int sectionWidth_;          // Size of
+    int sectionHeight_;         // puzzle piece
 
     /**
      * @brief divideImage creates subimage items from user image

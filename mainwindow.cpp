@@ -30,6 +30,30 @@ MainWindow::~MainWindow() {}
 
 void MainWindow::handleViewClick(const QPoint &clickPos)
 {
+    // Clicked position as position on puzzle "grid"
+    // on range (0-IMAGE_COLUMNS, 0-IMAGE_ROWS)
+    int x = clickPos.x() / (sectionWidth_ + IMAGE_MARGIN);
+    int y = clickPos.y() / (sectionHeight_ + IMAGE_MARGIN);
+
+    // Get the clicked element
+    QGraphicsItem* clicked_item = puzzleView_->itemAt(clickPos);
+
+    // If there was a puzzle piece and clicked location
+    if (clicked_item) {
+        // If the clicked puzzle piece was on one of the four sides of the empty slot
+        if ((x == empty_tile_location_.x() && abs(y - empty_tile_location_.y()) == 1)
+            || (y == empty_tile_location_.y() && abs(x - empty_tile_location_.x()) == 1)) {
+
+            // Switch the clicked puzzle piece with the empty slot
+            QPoint old_empty(empty_tile_location_);
+            empty_tile_location_.setX(x);
+            empty_tile_location_.setY(y);
+            clicked_item->setPos((old_empty.x() * IMAGE_MARGIN) + (old_empty.x() * sectionWidth_),
+                                 (old_empty.y() * IMAGE_MARGIN) + (old_empty.y() * sectionHeight_));
+        }
+    } else {
+        qDebug() << "No item was clicked.";
+    }
 }
 
 void MainWindow::divideImage(const QImage &originalImage, int rows, int columns,
