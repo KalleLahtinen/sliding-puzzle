@@ -1,8 +1,12 @@
+#include "custompixmap.hpp"
 #include "mainwindow.hpp"
 #include <QVBoxLayout>
 #include <QDebug>
 #include <QGraphicsPixmapItem>
 #include "clickableview.hpp"
+#include <QThread>
+#include <QEventLoop>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,14 +25,14 @@ MainWindow::MainWindow(QWidget *parent)
     layout->addWidget(puzzleView_);
 
     // Create the puzzle display from user image
-    display_puzzle();
+    displayPuzzle();
 
     // Connect the custom view click handler to action
-    connect(puzzleView_, &ClickableView::mouseClickDetected, this, &MainWindow::handleViewClick);}
+    connect(puzzleView_, &ClickableView::mouseClickDetected, this, &MainWindow::slideToEmpty);}
 
 MainWindow::~MainWindow() {}
 
-void MainWindow::handleViewClick(const QPoint &clickPos)
+void MainWindow::slideToEmpty(const QPoint &clickPos)
 {
     // Clicked position as position on puzzle "grid"
     // on range (0-IMAGE_COLUMNS, 0-IMAGE_ROWS)
@@ -44,12 +48,23 @@ void MainWindow::handleViewClick(const QPoint &clickPos)
         if ((x == empty_tile_location_.x() && abs(y - empty_tile_location_.y()) == 1)
             || (y == empty_tile_location_.y() && abs(x - empty_tile_location_.x()) == 1)) {
 
-            // Switch the clicked puzzle piece with the empty slot
-            QPoint old_empty(empty_tile_location_);
+            CustomPixmap* animItem = qgraphicsitem_cast<CustomPixmap*>(clicked_item);
+            // Switch the clicked piece with empty slot using QPropertyAnimation
+            anim_ = new QPropertyAnimation(animItem, "pos");
+
+            anim_->setDuration(SLIDE_TIME);
+            anim_->setStartValue(clicked_item->pos());
+            anim_->setEndValue(QPointF((empty_tile_location_.x() * IMAGE_MARGIN) + (empty_tile_location_.x() * sectionWidth_),
+                                       (empty_tile_location_.y() * IMAGE_MARGIN) + (empty_tile_location_.y() * sectionHeight_)));
+            anim_->start();
+
+            // Disable clicks for the duration of the switch to prevent unwanted behavior
+            puzzleView_->setEnabled(false);
+            QTimer::singleShot(SLIDE_TIME, this, [=](){puzzleView_->setEnabled(true);});
+
+            // Set empty tile location to puzzle piece's old location
             empty_tile_location_.setX(x);
             empty_tile_location_.setY(y);
-            clicked_item->setPos((old_empty.x() * IMAGE_MARGIN) + (old_empty.x() * sectionWidth_),
-                                 (old_empty.y() * IMAGE_MARGIN) + (old_empty.y() * sectionHeight_));
         }
     } else {
         qDebug() << "No item was clicked.";
@@ -74,13 +89,13 @@ void MainWindow::divideImage(const QImage &originalImage, int rows, int columns,
                 empty_tile_location_.setY(rows - 1);
                 continue;
             }
-
             int x = j * sectionWidth_;
             int y = i * sectionHeight_;
 
-            // Create QGraphicsPixmapItems from sections of puzzle image
+            // Create CustomPixmap items from sections of puzzle image.
+            // Derived class CustomPixmap enables animating item position
             QImage subimage = originalImage.copy(x, y, sectionWidth_, sectionHeight_);
-            QGraphicsPixmapItem* clickableItem = new QGraphicsPixmapItem(QPixmap::fromImage(subimage));
+            CustomPixmap* clickableItem = new CustomPixmap(QPixmap::fromImage(subimage));
 
             // Add created subImages into grid formation with margins
             // resembling original image on scene_ container
@@ -91,7 +106,7 @@ void MainWindow::divideImage(const QImage &originalImage, int rows, int columns,
     }
 }
 
-void MainWindow::display_puzzle()
+void MainWindow::displayPuzzle()
 {
     QImage originalImage(IMAGEPATH);
 

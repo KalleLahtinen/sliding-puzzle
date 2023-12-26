@@ -12,6 +12,7 @@
 #include <QGraphicsScene>
 #include <QImage>
 #include "clickableview.hpp"
+#include <QPropertyAnimation>
 
 const int WINDOW_MARGIN = 5;          // Space around puzzle
 const int IMAGE_MARGIN = 3;           // Space between puzzle parts
@@ -20,6 +21,9 @@ const QString IMAGEPATH = "owl.jpeg"; // Puzzle image location
 // Puzzle "grid" dimensions
 const int IMAGE_COLUMNS = 4;
 const int IMAGE_ROWS = 6;
+
+// The amount of milliseconds a puzzle piece slides for
+const int SLIDE_TIME = 100;
 
 class MainWindow : public QMainWindow
 {
@@ -31,15 +35,17 @@ public:
 
 private slots:
     /**
-     * @brief handleViewClick receives ClickableView::mouseClickDetected signal.
+     * @brief slideToEmpty receives ClickableView::mouseClickDetected signal.
      *        Switches clicked QGraphicsPixmapItem with empty slot if one was clicked
      * @param clickPos is the clicked position of the view
      */
-    void handleViewClick(const QPoint &clickPos);
+    void slideToEmpty(const QPoint &clickPos);
 
 private:
     ClickableView* puzzleView_; // puzzleView_ and
     QGraphicsScene* scene_;     // scene_ are used for displaying the puzzle
+
+    QPropertyAnimation* anim_;
 
     // The location of the one empty puzzle tile
     QPoint empty_tile_location_;
@@ -62,6 +68,6 @@ private:
      * @brief display_puzzle converts the puzzle image to the correct aspect ratio
      *        and creates the puzzle sections using divideImage()
      */
-    void display_puzzle();
+    void displayPuzzle();
 };
 #endif // MAINWINDOW_HPP

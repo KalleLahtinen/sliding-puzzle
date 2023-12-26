@@ -9,11 +9,15 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    custompixmap.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    clickableview.cpp
 
 HEADERS += \
-    mainwindow.hpp
+    custompixmap.hpp \
+    mainwindow.hpp \
+    clickableview.hpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
